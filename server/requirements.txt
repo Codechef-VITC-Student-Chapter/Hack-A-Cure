@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+redis
+rq
+requests
+ragas
+beanie
+motor
