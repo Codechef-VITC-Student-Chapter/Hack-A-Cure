@@ -69,7 +69,7 @@ async def submit_job(payload: SubmissionRequest):
     job_id = str(job.id)
 
     # Build dataset: always fetch 25 QA pairs and pass as list of dicts
-    qa_pairs = await QuestionAnswerPair.find_all().limit(100).to_list()
+    qa_pairs = await QuestionAnswerPair.find_all().limit(25).to_list()
     dataset = [{"question": qa.question, "answer": qa.answer} for qa in qa_pairs]
     print(dataset)
     # # Enqueue the evaluation task with dataset
@@ -102,35 +102,4 @@ async def get_all_jobs_of_team(team_id: str):
 # Get job status by job id
 @app.get("/jobs/{job_id}", response_model=JobStatusResponse)
 async def get_job_status(job_id: str):
-    """
-    Return the current status of a job.
-
-    Args:
-        job_id: The job ID to fetch
-
-    Returns:
-        JobStatusResponse with current job status and progress
-    """
-    try:
-        # Fetch job from database
-        job = await Job.get(job_id)
-
-        if not job:
-            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
-
-        return JobStatusResponse(
-            job_id=job_id,
-            team_name=job.team_id,
-            status=job.status,
-            dataset_name="default",  # TODO: Store dataset_name in Job model
-            total_cases=job.total_cases,
-            processed_cases=job.processed_cases,
-            created_at=job.created_at,
-            started_at=job.started_at,
-            finished_at=job.finished_at,
-            error_message=None,  # TODO: Add error_message field to Job model if needed
-        )
-    except Exception as e:
-        if "not found" in str(e).lower():
-            raise
-        raise HTTPException(status_code=500, detail=str(e))
+    print("Get Job details with job_id")
