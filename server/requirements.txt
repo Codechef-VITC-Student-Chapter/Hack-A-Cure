@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+redis
+rq
+requests
+httpx
+ragas
+datasets
+evaluate
+beanie
+motor
+langchain-google-genai
+langchain-groq
