@@ -7,7 +7,7 @@ export  async function POST(req: Request, { params }: { params: { userId: string
         await connectDB();
         let { url } = await req.json();
         let { userId } = params;
-        let updatedUser = await User.findByIdAndUpdate(userId, { $set: { url: url } });
+        let updatedUser = await User.findByIdAndUpdate(userId, { $set: { url: url } },{ new: true });
 
         if (!updatedUser) {
             return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
