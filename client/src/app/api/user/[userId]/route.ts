@@ -5,12 +5,12 @@ import { connectDB } from "@/db/mongoose";
 import { User } from "@/models/user.model";
 
 
-export default async function GET( { params }: { params: { userId: string } }){
+export async function GET( request: Request,{ params }: { params: { userId: string } }){
     try{
         await connectDB();
         let {userId}= params;
         let user=await User.findById(userId);
-        if(user.length==1){
+        if(user){
         return NextResponse.json({success:true,data:user});
         } else{
         return NextResponse.json({success:false,data:"User doesn't exists!!"});

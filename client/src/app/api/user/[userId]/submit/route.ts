@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/db/mongoose";
 import { User } from "@/models/user.model";
 
-export default async function POST(req: Request, { params }: { params: { userId: string } }) {
+export  async function POST(req: Request, { params }: { params: { userId: string } }) {
     try {
         await connectDB();
         let { url } = await req.json();
