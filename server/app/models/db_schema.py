@@ -56,3 +56,18 @@ class QuestionAnswerPair(Document):
 
     class Settings:
         name = "qa_pairs"
+
+# -----  Score Summary  -----
+class ScoreSummary(BaseModel):  
+    total_score: float = 0.0
+    average_context_precision: float = 0.0
+    average_context_recall: float = 0.0
+    average_answer_relevancy: float = 0.0
+    average_faithfulness: float = 0.0
+
+# -----  Case Timing  -----
+class CaseTiming(BaseModel):
+    question: str
+    start_time: datetime
+    end_time: datetime
+    duration_seconds: float

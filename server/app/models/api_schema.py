@@ -18,7 +18,7 @@ from .db_schema import (
 class SubmissionRequest(BaseModel):
     """Participant submission payload to start an evaluation job."""
 
-    team_name: str = Field(..., description="Display name of the team")
+    team_id: str = Field(..., description="Team ID registered for the challenge")
     submission_url: HttpUrl = Field(
         ..., description="Public URL of the RAG backend endpoint to evaluate"
     )
@@ -34,7 +34,7 @@ class SubmissionResponse(BaseModel):
 
 class JobStatusResponse(BaseModel):
     job_id: str
-    team_name: str
+    team_id: str
     status: JobStatus
     dataset_name: str
     total_cases: int
@@ -47,7 +47,7 @@ class JobStatusResponse(BaseModel):
 
 class JobDetailResponse(BaseModel):
     job_id: str
-    team_name: str
+    team_id: str
     submission_url: HttpUrl
     status: JobStatus
     dataset_name: str
@@ -62,3 +62,16 @@ class JobDetailResponse(BaseModel):
 
 
 # -------- Leaderboard --------
+# class LeaderboardEntry(BaseModel):
+#     team_id: str        
+#     total_jobs: int
+#     average_score: float
+#     average_context_precision: float = 0.0
+#     average_context_recall: float = 0.0
+#     average_answer_relevancy: float = 0.0
+#     average_faithfulness: float = 0.0
+
+
+# class LeaderboardResponse(BaseModel):
+#     entries: List[LeaderboardEntry] = Field(default_factory=list)   
+
