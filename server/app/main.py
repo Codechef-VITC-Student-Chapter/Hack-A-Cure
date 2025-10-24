@@ -1,97 +1,125 @@
+import os
+import traceback
 from datetime import datetime, timezone
-from uuid import uuid4
-
-from fastapi import FastAPI
-
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException
 from app.models import JobStatus
 from app.models.api_schema import (
     SubmissionRequest,
     SubmissionResponse,
     JobStatusResponse,
-    JobDetailResponse,
+    TeamJobsResponse,
 )
+from app.models.db_schema import Job, init_db, QuestionAnswerPair
+from app.services import enqueue_evaluation_job, build_dataset_from_db
+from dotenv import load_dotenv
 
-app = FastAPI()
+load_dotenv()
+
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise Exception("No MONGO_URI env variable found")
+
+app = FastAPI(title="HackACure RAG Eval API")
 
 
-# NOTE: This is a dummy API version without database.
-# TODO: When implementing for real, initialize MongoDB/Beanie here and register document models.
-# from motor.motor_asyncio import AsyncIOMotorClient
-# from beanie import init_beanie
-# from app.models import Job
-# @app.on_event("startup")
-# async def on_startup():
-#     client = AsyncIOMotorClient(MONGO_URI)
-#     db = client.get_default_database() or client["hackacure"]
-#     await init_beanie(database=db, document_models=[Job])
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
 async def server_root():
-    return {"message": "HackACure RAG Eval API"}
+    """API root endpoint."""
+    return {"message": "HackACure RAG Eval API", "version": "1.0.0"}
 
 
-# NOTE: Dummy implementation only. No background evaluation is performed here.
-# TODO: Implement a background task that loads dataset, invokes participant backend for each Q,
-#       computes metrics (answer_relevancy, faithfulness, context precision/recall, context_f1),
-#       aggregates ScoreSummary, and persists results to the Job document.
-
-
-# Submit a new job to evaluate
 @app.post("/jobs", response_model=SubmissionResponse)
 async def submit_job(payload: SubmissionRequest):
-    """Create a new evaluation job (dummy).
-
-    TODO: Persist a Job document with status=QUEUED, then enqueue a background worker
-    to process the evaluation. Return the created job's id.
     """
-    dummy_job_id = f"job_{uuid4().hex[:8]}"
-    return SubmissionResponse(job_id=dummy_job_id, status=JobStatus.QUEUED)
+    Create a new evaluation job.
+
+    This endpoint:
+    1. Creates a Job document in the database with status=QUEUED
+    2. Fetches `25 or 100` QuestionAnswerPair documents as the test dataset
+    3. Enqueues a background worker task with that dataset
+    4. Returns the job ID immediately
+    """
+    try:
+        job = Job(
+            team_id=payload.team_id,
+            submission_url=payload.submission_url,
+            status=JobStatus.QUEUED,
+            total_cases=25,
+            top_k=payload.top_k,
+            processed_cases=0,
+            created_at=datetime.now(timezone.utc),
+        )
+
+        # Save the job to get its ID
+        await job.insert()
+        job_id = str(job.id)
+
+        # Build dataset: always fetch 25 QA pairs
+        try:
+            dataset = await build_dataset_from_db()
+        except Exception as e:
+            job.status = JobStatus.FAILED
+            await job.save()
+            raise HTTPException(
+                status_code=500, detail=f"Failed to build dataset: {str(e)}"
+            )
+
+        # Enqueue the evaluation task with dataset
+        try:
+            rq_job_id = enqueue_evaluation_job(
+                job_id=job_id,
+                team_id=payload.team_id,
+                submission_url=str(payload.submission_url),
+                dataset=dataset,
+                top_k=payload.top_k,
+            )
+        except Exception as e:
+            job.status = JobStatus.FAILED
+            await job.save()
+            raise HTTPException(
+                status_code=500, detail=f"Failed to enqueue job: {str(e)}"
+            )
+
+        if not rq_job_id:
+            job.status = JobStatus.FAILED
+            await job.save()
+            raise HTTPException(
+                status_code=500, detail="Failed to enqueue evaluation job"
+            )
+
+        return SubmissionResponse(
+            job_id=job_id,
+            status=JobStatus.QUEUED,
+        )
+
+    except HTTPException:
+        # Re-raise FastAPI HTTP exceptions as is
+        raise
+    except Exception as e:
+        # Catch-all for unexpected errors
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500, detail=f"Unexpected error while submitting job: {str(e)}"
+        )
 
 
-# Get job status by id
+# Get Job Status by team id
+@app.get("/jobs/team/{team_id}", response_model=TeamJobsResponse)
+async def get_all_jobs_of_team(team_id: str):
+    print("Get all the jobs having a particular team_id")
+
+
+# Get job status by job id
 @app.get("/jobs/{job_id}", response_model=JobStatusResponse)
 async def get_job_status(job_id: str):
-    """Return the current status of a job (dummy).
-
-    TODO: Fetch Job by id from database and map fields to JobStatusResponse.
-    """
-    now = datetime.now(timezone.utc)
-    return JobStatusResponse(
-        job_id=job_id,
-        team_name="<team-name>",
-        status=JobStatus.QUEUED,
-        dataset_name="default",
-        total_cases=0,
-        processed_cases=0,
-        created_at=now,
-        started_at=None,
-        finished_at=None,
-        error_message=None,
-    )
-
-
-# Get job result (full details) by id
-@app.get("/jobs/{job_id}/result", response_model=JobDetailResponse)
-async def get_job_result(job_id: str):
-    """Return final job results (dummy).
-
-    TODO: Fetch Job by id, ensure it is COMPLETED (or return partial results during RUNNING),
-    and return the stored scores and per-case results.
-    """
-    now = datetime.now(timezone.utc)
-    return JobDetailResponse(
-        job_id=job_id,
-        team_name="<team-name>",
-        submission_url="https://example.com/rag-endpoint",
-        status=JobStatus.COMPLETED,
-        dataset_name="default",
-        total_cases=0,
-        processed_cases=0,
-        created_at=now,
-        started_at=now,
-        finished_at=now,
-        scores=None,
-        results=[],
-        error_message=None,
-    )
+    print("Get Job details with job_id")
