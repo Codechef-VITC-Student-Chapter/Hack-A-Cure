@@ -1,4 +1,4 @@
-// ...existing code...
+
 import { NextResponse } from "next/server";
 import { connectDB } from "@/db/mongoose";
 import { User } from "@/models/user.model";
@@ -26,4 +26,3 @@ export async function GET(
     );
   }
 }
-// ...existing code...
