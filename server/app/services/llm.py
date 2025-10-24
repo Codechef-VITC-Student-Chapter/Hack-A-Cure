@@ -3,6 +3,9 @@ from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_groq import ChatGroq
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Get Gemini API key from environment variable
 GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -26,7 +29,7 @@ if not GROQ_API_MODEL:
 
 config = {
     "model": "gemini-2.5-flash",
-    "temperature": 0.4,
+    "temperature": 0.2,
     "max_tokens": None,
     "top_p": 0.8,
 }

@@ -4,6 +4,7 @@ import os
 from typing import Optional, List, Dict, Any
 from redis import Redis
 from rq import Queue
+import pickle
 
 # Redis connection configuration from environment
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -53,19 +54,46 @@ def enqueue_evaluation_job(
         dataset: List of dicts with keys {"question", "answer"} to test the endpoint
         top_k: Number of top context chunks to retrieve
 
-    Returns:
+
         RQ job ID if successful, None otherwise
     """
+    # Print dataset size and approximate payload size prior to enqueueing
+    try:
+        if isinstance(dataset, dict):
+            ds_len = len(dataset.get("question", []))
+        else:
+            ds_len = len(dataset)
+    except Exception:
+        ds_len = -1
+
+    try:
+        payload = (job_id, team_id, str(submission_url), dataset, int(top_k))
+        payload_size_bytes = len(
+            pickle.dumps(payload, protocol=pickle.HIGHEST_PROTOCOL)
+        )
+    except Exception:
+        payload_size_bytes = -1
+
+    kb = (payload_size_bytes / 1024.0) if payload_size_bytes >= 0 else -1
+    mb = (payload_size_bytes / (1024.0 * 1024.0)) if payload_size_bytes >= 0 else -1
+    print(
+        f"[enqueue] job_id={job_id} team_id={team_id} dataset_items={ds_len} "
+        f"approx_payload_size={payload_size_bytes} bytes (~{kb:.1f} KB, ~{mb:.2f} MB)"
+        if payload_size_bytes >= 0
+        else f"[enqueue] job_id={job_id} team_id={team_id} dataset_items={ds_len} (payload size estimation failed)"
+    )
     from app.services.tasks import run_evaluation_task
 
     try:
+        # IMPORTANT: Pass our function arguments positionally to avoid
+        # clashing with RQ's reserved 'job_id' keyword (which sets the RQ job id).
         rq_job = evaluation_queue.enqueue(
             run_evaluation_task,
-            job_id=job_id,
-            team_id=team_id,
-            submission_url=submission_url,
-            dataset=dataset,
-            top_k=top_k,
+            job_id,  # function arg 1: job_id
+            team_id,  # function arg 2: team_id
+            submission_url,  # function arg 3: submission_url
+            dataset,  # function arg 4: dataset
+            top_k,  # function arg 5: top_k
             job_timeout="30m",  # 30 minutes timeout
             result_ttl=86400,  # Keep results for 24 hours
             failure_ttl=86400,  # Keep failed job info for 24 hours

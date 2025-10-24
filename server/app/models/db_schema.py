@@ -35,23 +35,17 @@ class QuestionAnswerPair(Document):
 
 # --- Score Summary ---
 class ScoreSummary(BaseModel):
-    avg_context_precision: float = Field(ge=0.0, le=1.0, default=0.0)
-    avg_context_recall: float = Field(ge=0.0, le=1.0, default=0.0)
+    avg_answer_correctness: float = Field(ge=0.0, le=1.0, default=0.0)
+    avg_context_relevance: float = Field(ge=0.0, le=1.0, default=0.0)
     avg_answer_relevancy: float = Field(ge=0.0, le=1.0, default=0.0)
     avg_faithfulness: float = Field(ge=0.0, le=1.0, default=0.0)
     overall_score: float = Field(ge=0.0, le=1.0, default=0.0)
 
 
-# --- Case Timing ---
-class CaseTiming(BaseModel):
-    case_index: int
-    duration_seconds: float
-
-
 # --- Per-question metric breakdown ---
 class MetricBreakdown(BaseModel):
-    context_precision: float = Field(ge=0.0, le=1.0, default=0.0)
-    context_recall: float = Field(ge=0.0, le=1.0, default=0.0)
+    context_relevance: float = Field(ge=0.0, le=1.0, default=0.0)
+    answer_correctness: float = Field(ge=0.0, le=1.0, default=0.0)
     answer_relevancy: float = Field(ge=0.0, le=1.0, default=0.0)
     faithfulness: float = Field(ge=0.0, le=1.0, default=0.0)
 
