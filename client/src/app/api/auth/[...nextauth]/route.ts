@@ -11,15 +11,15 @@ const handler = NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        name: { label: "User Name", type: "text" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         await connectDB();
 
-        if (!credentials?.name || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await User.findOne({ name: credentials.name });
+        const user = await User.findOne({ email: credentials.email });
         if (!user) return null;
 
         const isValid = await bcrypt.compare(credentials.password, user.password);

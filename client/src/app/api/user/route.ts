@@ -1,4 +1,3 @@
-// GET request to fetch ledearboard users
 import { NextResponse } from "next/server";
 import { connectDB } from "@/db/mongoose";
 import { User } from "@/models/user.model";

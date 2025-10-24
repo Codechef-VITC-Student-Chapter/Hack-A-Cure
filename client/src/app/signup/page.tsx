@@ -10,6 +10,7 @@ export default function SignupPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
+    
     const { data: session, status } = useSession();
 
     useEffect(() => {
