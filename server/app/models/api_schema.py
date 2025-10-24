@@ -5,11 +5,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, HttpUrl
 
-from .db_schema import (
-    EvalCaseResult,
-    JobStatus,
-    ScoreSummary,
-)
+from .db_schema import EvalCaseResult, JobStatus, ScoreSummary, Job
 
 
 # -------- Submission --------
@@ -18,9 +14,12 @@ from .db_schema import (
 class SubmissionRequest(BaseModel):
     """Participant submission payload to start an evaluation job."""
 
-    team_id: str = Field(..., description="Team ID registered for the challenge")
+    team_id: str = Field(..., description="ID of the team")
     submission_url: HttpUrl = Field(
         ..., description="Public URL of the RAG backend endpoint to evaluate"
+    )
+    top_k: int = Field(
+        default=5, description="Number of top context chunks to retrieve", ge=1, le=20
     )
 
 
@@ -75,3 +74,6 @@ class JobDetailResponse(BaseModel):
 # class LeaderboardResponse(BaseModel):
 #     entries: List[LeaderboardEntry] = Field(default_factory=list)   
 
+class TeamJobsResponse(BaseModel):
+    team_id: str
+    jobs: List[Job]
