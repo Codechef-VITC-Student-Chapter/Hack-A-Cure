@@ -25,39 +25,20 @@ import {
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTeamStore } from "@/stores/teamStore";
-
-interface Submission {
-  id: number;
-  url: string;
-  date: string;
-  status: "pending" | "evaluated" | "failed";
-  score?: number;
-}
+import { Job, SubmissionRequest } from "@/lib/types";
+import { formatDateTime } from "@/lib/utils";
+import { addNewSubmission, getAllTeamJobs } from "@/lib/apiUtils";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  const [teamName, setTeamName] = useState<string | null>(null);
-  const [submissions, setSubmissions] = useState<Submission[]>([
-    {
-      id: 1,
-      url: "https://api.example.com/predict",
-      date: "2025-01-15 10:30 AM",
-      status: "evaluated",
-      score: 87.5,
-    },
-    {
-      id: 2,
-      url: "https://api2.example.com/predict",
-      date: "2025-01-14 03:15 PM",
-      status: "pending",
-    },
-  ]);
+  const [jobs, setJobs] = useState<Job[] | []>([]);
   const [newUrl, setNewUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const { teamDetails, fetchTeamDetails } = useTeamStore();
+  const { teamDetails, fetchTeamDetails, setTeamDetails } = useTeamStore();
 
   useEffect(() => {
     if (status === "loading") return;
@@ -65,6 +46,13 @@ export default function DashboardPage() {
 
     if (session?.user?.email) {
       fetchTeamDetails(session.user.id);
+
+      const fetchJobs = async () => {
+        const data = await getAllTeamJobs(session.user.id);
+        setJobs(data);
+      };
+
+      fetchJobs();
     }
   }, [router, status]);
 
@@ -76,7 +64,7 @@ export default function DashboardPage() {
       return;
     }
 
-    if (submissions.length >= 10) {
+    if (teamDetails?.submissionsLeft! <= 0) {
       alert("You have reached the maximum of 10 submissions");
       return;
     }
@@ -84,14 +72,19 @@ export default function DashboardPage() {
     setLoading(true);
 
     try {
-      const newSubmission: Submission = {
-        id: submissions.length + 1,
-        url: newUrl,
-        date: new Date().toLocaleString(),
-        status: "pending",
+      const newSubmission: SubmissionRequest = {
+        team_id: session?.user.id,
+        submission_url: newUrl,
+        top_k: 5,
       };
 
-      setSubmissions([newSubmission, ...submissions]);
+      const { success, user } = await addNewSubmission(newSubmission);
+      if (success) setTeamDetails(user);
+      else throw new Error("Submission failed");
+
+      const updatedJobs = await getAllTeamJobs(session!.user.id);
+      setJobs(updatedJobs);
+
       setNewUrl("");
       alert("Submission added successfully!");
     } catch (error) {
@@ -101,11 +94,18 @@ export default function DashboardPage() {
     }
   };
 
+  const handleRefreshSubmissions = async () => {
+    if (session?.user.id) {
+      const updatedJobs = await getAllTeamJobs(session.user.id);
+      setJobs(updatedJobs);
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "evaluated":
+      case "completed":
         return "bg-green-500/20 text-green-400";
-      case "pending":
+      case "queued":
         return "bg-yellow-500/20 text-yellow-400";
       case "failed":
         return "bg-red-500/20 text-red-400";
@@ -116,18 +116,16 @@ export default function DashboardPage() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case "evaluated":
+      case "completed":
         return "✓ Evaluated";
-      case "pending":
-        return "⏳ Pending";
+      case "queued":
+        return "⏳ Queued";
       case "failed":
         return "✗ Failed";
       default:
         return status;
     }
   };
-
-  const submissionsLeft = 10 - submissions.length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -140,11 +138,17 @@ export default function DashboardPage() {
                 Hack-A-Cure
               </h1>
             </Link>
-            <p className="text-sm text-muted-foreground">Welcome, {teamDetails?.teamName}</p>
+            <p className="text-sm text-muted-foreground">
+              Welcome, {teamDetails?.teamName}
+            </p>
           </div>
 
           <div className="flex items-center gap-4">
-            <Badge variant={teamDetails?.submissionsLeft! < 3 ? "destructive" : "secondary"}>
+            <Badge
+              variant={
+                teamDetails?.submissionsLeft! < 3 ? "destructive" : "secondary"
+              }
+            >
               Submissions: {teamDetails?.submissionsLeft} / 10
             </Badge>
             <Link href="/leaderboard">
@@ -225,8 +229,8 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm font-mono">
-                    {submissions.length > 0
-                      ? submissions[0].date
+                    {jobs && jobs.length > 0
+                      ? formatDateTime(jobs[0].created_at, timeZone)
                       : "No submissions yet"}
                   </div>
                 </CardContent>
@@ -243,7 +247,7 @@ export default function DashboardPage() {
                       Your submission history and evaluation results
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button onClick={handleRefreshSubmissions} variant="outline" size="sm">
                     Refresh
                   </Button>
                 </div>
@@ -269,27 +273,25 @@ export default function DashboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {submissions.map((submission) => (
+                      {jobs.map((job, i) => (
                         <tr
-                          key={submission.id}
+                          key={i}
                           className="border-b border-border hover:bg-card/50 transition"
                         >
-                          <td className="py-3 px-4">{submission.id}</td>
+                          <td className="py-3 px-4">{i + 1}</td>
                           <td className="py-3 px-4 font-mono text-xs truncate max-w-xs">
-                            {submission.url}
+                            {job.submission_url}
                           </td>
                           <td className="py-3 px-4 text-xs">
-                            {submission.date}
+                            {formatDateTime(job.created_at, timeZone)}
                           </td>
                           <td className="py-3 px-4">
-                            <Badge
-                              className={getStatusColor(submission.status)}
-                            >
-                              {getStatusLabel(submission.status)}
+                            <Badge className={getStatusColor(job.status)}>
+                              {getStatusLabel(job.status)}
                             </Badge>
                           </td>
                           <td className="py-3 px-4 font-bold">
-                            {submission.score ? `${submission.score}%` : "—"}
+                            {job.total_score ? `${job.total_score}` : "—"}
                           </td>
                         </tr>
                       ))}

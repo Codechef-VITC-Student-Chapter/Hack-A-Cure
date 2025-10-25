@@ -20,7 +20,7 @@ export const useTeamStore = create<TeamStore>((set) => ({
   updateTeamDetails: (updates) =>
     set((state) => ({
       teamDetails: state.teamDetails
-        ? { ...state.teamDetails, ...updates }
+        ? ({ ...state.teamDetails, ...updates } as IUser)
         : null,
     })),
   clearTeamDetails: () => set({ teamDetails: null }),

@@ -1,56 +1,68 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const [teamName, setTeamName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const { data: session, status } = useSession();
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+  const [name, setName] = useState("");
+  const [teamName, setTeamName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      if (!teamName || !email || !password || !confirmPassword) {
-        setError("Please fill in all fields")
-        return
+      if (!name || !teamName || !email || !password) {
+        setError("Please fill in all fields");
+        return;
       }
 
-      if (password !== confirmPassword) {
-        setError("Passwords do not match")
-        return
-      }
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, teamName, email, password }),
+      });
 
-      if (password.length < 6) {
-        setError("Password must be at least 6 characters")
-        return
-      }
+      const data = await res.json();
 
-      // Store team info in localStorage for demo
-      localStorage.setItem("teamName", teamName)
-      localStorage.setItem("email", email)
-      localStorage.setItem("isLoggedIn", "true")
-      router.push("/dashboard")
+      if (res.ok) {
+        router.push("/");
+      } else {
+        setError(data.error || "Signup failed. Please try again.");
+      }
     } catch (err) {
-      setError("Registration failed. Please try again.")
+      setError("Something went wrong. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -64,10 +76,24 @@ export default function RegisterPage() {
             Hack-A-Cure
           </div>
           <CardTitle>Register</CardTitle>
-          <CardDescription>Create your team account to participate in the competition</CardDescription>
+          <CardDescription>
+            Create your team account to participate in the competition
+          </CardDescription>
         </CardHeader>
+
         <CardContent>
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form onSubmit={handleSignup} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                placeholder="Your Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="teamName">Team Name</Label>
               <Input
@@ -103,18 +129,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-
             {error && <div className="text-sm text-destructive">{error}</div>}
 
             <Button type="submit" className="w-full" disabled={loading}>
@@ -125,7 +139,10 @@ export default function RegisterPage() {
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/login" className="text-cyan-400 hover:text-cyan-300 transition">
+              <Link
+                href="/login"
+                className="text-cyan-400 hover:text-cyan-300 transition"
+              >
                 Login here
               </Link>
             </p>
@@ -141,5 +158,5 @@ export default function RegisterPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
