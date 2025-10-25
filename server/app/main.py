@@ -1,19 +1,14 @@
-import os
-import traceback
-from datetime import datetime, timezone
-from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
-from app.models import JobStatus
-from app.models.api_schema import (
-    SubmissionRequest,
-    SubmissionResponse,
-    JobStatusResponse,
-    TeamJobsResponse,
-)
-from app.models.db_schema import Job, init_db, QuestionAnswerPair
-from app.services import enqueue_evaluation_job, build_dataset_from_db
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+import os, traceback
 from dotenv import load_dotenv
 from beanie import PydanticObjectId
+from app.models import JobStatus
+from app.models.api_schema import SubmissionRequest, SubmissionResponse, JobStatusResponse
+from app.models.db_schema import Job, init_db
+from app.services import enqueue_evaluation_job, build_dataset_from_db
 
 load_dotenv()
 
@@ -21,21 +16,23 @@ MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
     raise Exception("No MONGO_URI env variable found")
 
-app = FastAPI(title="HackACure RAG Eval API")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     yield
 
+app = FastAPI(lifespan=lifespan, title="HackACure RAG Eval API")
 
-app = FastAPI(lifespan=lifespan)
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # or ["*"] during dev
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 async def server_root():
-    """API root endpoint."""
     return {"message": "HackACure RAG Eval API", "version": "1.0.0"}
 
 
@@ -67,7 +64,7 @@ async def submit_job(payload: SubmissionRequest):
 
         # Build dataset: always fetch 25 QA pairs
         try:
-            dataset = await build_dataset_from_db()
+            dataset = await build_dataset_from_db(5)
         except Exception as e:
             job.status = JobStatus.FAILED
             await job.save()
@@ -115,7 +112,7 @@ async def submit_job(payload: SubmissionRequest):
 
 
 # Get job status by id
-@app.get("/jobs/{job_id}", response_model=JobStatusResponse)
+@app.get("/jobs/{job_id}", response_model=Job)
 async def get_job_status(job_id: str):
     """Return the current status of a job stored in MongoDB."""
     try:
@@ -127,44 +124,12 @@ async def get_job_status(job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    return JobStatusResponse(
-        job_id=str(job.id),
-        team_id=job.team_id,
-        status=job.status,
-        dataset_name="default",
-        total_cases=job.total_cases,
-        processed_cases=job.processed_cases,
-        created_at=job.created_at,
-        started_at=job.started_at,
-        finished_at=job.finished_at,
-        error_message=None,
-    )
+    return job
 
 
 # Get all jobs for a specific team
-@app.get("/jobs/team/{team_id}", response_model=list[JobStatusResponse])
+@app.get("/jobs/team/{team_id}", response_model=list[Job])
 async def get_team_jobs(team_id: str):
     """Return a list of all jobs for a given team."""
     jobs = await Job.find(Job.team_id == team_id).to_list()
-    if not jobs:
-        raise HTTPException(
-            status_code=404, detail=f"No jobs found for team '{team_id}'"
-        )
-
-    job = []
-    for i in jobs:
-        job.append(
-            JobStatusResponse(
-                job_id=str(i.id),
-                team_id=i.team_id,
-                status=i.status,
-                dataset_name="default",
-                total_cases=i.total_cases,
-                processed_cases=i.processed_cases,
-                created_at=i.created_at,
-                started_at=i.started_at,
-                finished_at=i.finished_at,
-                error_message=None,
-            )
-        )
-    return job
+    return jobs

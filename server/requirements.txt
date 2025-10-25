@@ -11,3 +11,4 @@ beanie
 motor
 langchain-google-genai
 langchain-groq
+langchain_mistralai
