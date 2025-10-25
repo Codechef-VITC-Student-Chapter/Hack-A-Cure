@@ -3,6 +3,11 @@ uvicorn
 redis
 rq
 requests
+<<<<<<< HEAD
+ragas
+beanie
+motor
+=======
 httpx
 ragas
 datasets
@@ -11,3 +16,4 @@ beanie
 motor
 langchain-google-genai
 langchain-groq
+>>>>>>> origin/server

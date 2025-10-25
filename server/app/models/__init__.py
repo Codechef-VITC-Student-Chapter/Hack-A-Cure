@@ -4,6 +4,7 @@ from .db_schema import (
     EvalCaseResult,
     MetricBreakdown,
     ScoreSummary,
+    CaseTiming,
     QuestionAnswerPair,
 )
 from .api_schema import (
@@ -11,6 +12,8 @@ from .api_schema import (
     SubmissionResponse,
     JobStatusResponse,
     JobDetailResponse,
+    LeaderboardEntry,
+    LeaderboardResponse,
 )
 
 __all__ = [
@@ -19,9 +22,12 @@ __all__ = [
     "EvalCaseResult",
     "MetricBreakdown",
     "ScoreSummary",
+    "CaseTiming",
     "SubmissionRequest",
     "SubmissionResponse",
     "JobStatusResponse",
     "JobDetailResponse",
+    "LeaderboardEntry",
+    "LeaderboardResponse",
     "QuestionAnswerPair",
 ]

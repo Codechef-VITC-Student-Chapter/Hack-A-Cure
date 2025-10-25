@@ -4,6 +4,15 @@ from enum import Enum
 from typing import List, Optional
 from beanie import Document
 from pydantic import BaseModel, Field, HttpUrl
+
+
+# --- Job Status ---
+class JobStatus(str, Enum):
+    NEW = "new"
+    QUEUED = "queued"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
 from beanie import init_beanie
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
@@ -44,6 +53,8 @@ class ScoreSummary(BaseModel):
 
 # --- Per-question metric breakdown ---
 class MetricBreakdown(BaseModel):
+    context_precision: float = Field(ge=0.0, le=1.0, default=0.0)
+    context_recall: float = Field(ge=0.0, le=1.0, default=0.0)
     context_relevance: float = Field(ge=0.0, le=1.0, default=0.0)
     answer_correctness: float = Field(ge=0.0, le=1.0, default=0.0)
     answer_relevancy: float = Field(ge=0.0, le=1.0, default=0.0)
@@ -57,15 +68,6 @@ class EvalCaseResult(BaseModel):
     predicted_answer: Optional[str] = None
     metrics: MetricBreakdown = Field(default_factory=MetricBreakdown)
     error: Optional[str] = None
-
-
-# --- Job Status ---
-class JobStatus(str, Enum):
-    NEW = "new"
-    QUEUED = "queued"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
 
 
 # --- Job Schema ---
@@ -84,6 +86,34 @@ class Job(Document):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
+
+    class Settings:
+        name = "jobs"
+
+
+# --- Question/Answer Dataset ---
+class QuestionAnswerPair(Document):
+    question: str
+    answer: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    class Settings:
+        name = "qa_pairs"
+
+# -----  Score Summary  -----
+class ScoreSummary(BaseModel):  
+    total_score: float = 0.0
+    average_context_precision: float = 0.0
+    average_context_recall: float = 0.0
+    average_answer_relevancy: float = 0.0
+    average_faithfulness: float = 0.0
+
+# -----  Case Timing  -----
+class CaseTiming(BaseModel):
+    question: str
+    start_time: datetime
+    end_time: datetime
+    duration_seconds: float
     error_message: Optional[str] = None
 
     class Settings:

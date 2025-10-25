@@ -60,6 +60,20 @@ class JobDetailResponse(BaseModel):
     error_message: Optional[str] = None
 
 
+# -------- Leaderboard --------
+# class LeaderboardEntry(BaseModel):
+#     team_id: str        
+#     total_jobs: int
+#     average_score: float
+#     average_context_precision: float = 0.0
+#     average_context_recall: float = 0.0
+#     average_answer_relevancy: float = 0.0
+#     average_faithfulness: float = 0.0
+
+
+# class LeaderboardResponse(BaseModel):
+#     entries: List[LeaderboardEntry] = Field(default_factory=list)   
+
 class TeamJobsResponse(BaseModel):
     team_id: str
     jobs: List[Job]
