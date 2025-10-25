@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+venv
+.env
+=======
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -95,3 +99,4 @@ benchmark.json
 
 *:Zone.Identifier
 scripts
+>>>>>>> origin/server
