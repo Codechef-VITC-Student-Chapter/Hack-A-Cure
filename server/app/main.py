@@ -13,6 +13,7 @@ from app.models.api_schema import (
 from app.models.db_schema import Job, init_db, QuestionAnswerPair
 from app.services import enqueue_evaluation_job, build_dataset_from_db
 from dotenv import load_dotenv
+from beanie import PydanticObjectId
 
 load_dotenv()
 
@@ -113,13 +114,57 @@ async def submit_job(payload: SubmissionRequest):
         )
 
 
-# Get Job Status by team id
-@app.get("/jobs/team/{team_id}", response_model=TeamJobsResponse)
-async def get_all_jobs_of_team(team_id: str):
-    print("Get all the jobs having a particular team_id")
-
-
-# Get job status by job id
+# Get job status by id
 @app.get("/jobs/{job_id}", response_model=JobStatusResponse)
 async def get_job_status(job_id: str):
-    print("Get Job details with job_id")
+    """Return the current status of a job stored in MongoDB."""
+    try:
+        job_obj_id = PydanticObjectId(job_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid job ID format")
+
+    job = await Job.get(job_obj_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return JobStatusResponse(
+        job_id=str(job.id),
+        team_id=job.team_id,
+        status=job.status,
+        dataset_name="default",
+        total_cases=job.total_cases,
+        processed_cases=job.processed_cases,
+        created_at=job.created_at,
+        started_at=job.started_at,
+        finished_at=job.finished_at,
+        error_message=None,
+    )
+
+
+# Get all jobs for a specific team
+@app.get("/jobs/team/{team_id}", response_model=list[JobStatusResponse])
+async def get_team_jobs(team_id: str):
+    """Return a list of all jobs for a given team."""
+    jobs = await Job.find(Job.team_id == team_id).to_list()
+    if not jobs:
+        raise HTTPException(
+            status_code=404, detail=f"No jobs found for team '{team_id}'"
+        )
+
+    job = []
+    for i in jobs:
+        job.append(
+            JobStatusResponse(
+                job_id=str(i.id),
+                team_id=i.team_id,
+                status=i.status,
+                dataset_name="default",
+                total_cases=i.total_cases,
+                processed_cases=i.processed_cases,
+                created_at=i.created_at,
+                started_at=i.started_at,
+                finished_at=i.finished_at,
+                error_message=None,
+            )
+        )
+    return job
