@@ -5,7 +5,7 @@ import Redis from "ioredis";
 
 const redis = new Redis(process.env.REDIS_URL!);
 const CACHE_KEY = "leaderboard";
-const CACHE_TTL = 15;
+const CACHE_TTL = 15 * 60;
 
 export async function GET() {
   try {

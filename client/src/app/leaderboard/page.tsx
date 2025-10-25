@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { IUser } from "@/lib/types";
 import { fetchLeaderboard } from "@/lib/utils";
+import createUsers from "@/lib/createUsers";
 
 export default function LeaderboardPage() {
   const router = useRouter();
