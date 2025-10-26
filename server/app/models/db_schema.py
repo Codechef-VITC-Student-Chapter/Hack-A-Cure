@@ -17,7 +17,7 @@ MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/hackacure")
 async def init_db():
     """Initialize database connection."""
     client = AsyncIOMotorClient(MONGO_URI)
-    db = client.get_database("hackacure")
+    db = client.get_database("AppData")
     # Deferred import via globals to avoid NameError before class definitions
     await init_beanie(database=db, document_models=[Job, QuestionAnswerPair])
 

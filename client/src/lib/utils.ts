@@ -47,7 +47,6 @@ export const fetchLeaderboard = async (setTeams: (teams: IUser[]) => void) => {
     }
 
     setTeams(teams);
-    console.log(teams);
   } catch (error) {
     console.error("Error fetching leaderboard:", error);
   }

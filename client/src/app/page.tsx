@@ -11,7 +11,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+        <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-500">
           Hack-A-Cure
         </div>
         <div className="flex gap-4">
@@ -20,14 +20,9 @@ export default function LandingPage() {
               <Button>Dashboard</Button>
             </Link>
           ) : (
-            <>
-              <Link href="/login">
-                <Button variant="outline">Login</Button>
-              </Link>
-              <Link href="/register">
-                <Button>Register</Button>
-              </Link>
-            </>
+            <Link href="/login">
+              <Button variant="outline">Login</Button>
+            </Link>
           )}
         </div>
       </nav>
@@ -53,8 +48,7 @@ export default function LandingPage() {
             reasoning.
           </p>
 
-          {
-            status !== "authenticated" &&
+          {status !== "authenticated" && (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/login">
                 <Button
@@ -64,13 +58,8 @@ export default function LandingPage() {
                   Login
                 </Button>
               </Link>
-              <Link href="/register">
-                <Button size="lg" variant="outline">
-                  Register
-                </Button>
-              </Link>
             </div>
-          }
+          )}
         </div>
       </section>
 

@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/db/mongoose";
 import { User } from "@/models/user.model";
 import Redis from "ioredis";
+import { IUser, Job } from "@/lib/types";
 
 const redis = new Redis(process.env.REDIS_URL!);
 const CACHE_KEY = "leaderboard";
-const CACHE_TTL = 15 * 60;
+const CACHE_TTL = 10 * 60;
 
 export async function GET() {
   try {
@@ -17,7 +18,39 @@ export async function GET() {
     }
 
     await connectDB();
-    const users = await User.find().sort({ bestScore: -1 });
+    let users = await User.find().sort({ bestScore: -1 });
+
+    await Promise.all(
+      users.map(async (user: IUser) => {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/jobs/team/${
+            user._id as string
+          }`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch jobs");
+        }
+
+        const jobs: Job[] = await res.json();
+
+        const maxScore = jobs.reduce(
+          (max, job) => (job.total_score > max ? job.total_score : max),
+          0
+        );
+        user.bestScore = maxScore;
+
+        await user.save();
+      })
+    );
+
+    users = await User.find().sort({ bestScore: -1 }).lean();
 
     await redis.set(CACHE_KEY, JSON.stringify(users), "EX", CACHE_TTL);
     console.log("📦 Cached leaderboard in Redis");

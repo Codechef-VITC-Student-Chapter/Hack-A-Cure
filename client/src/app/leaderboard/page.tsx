@@ -15,7 +15,6 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { IUser } from "@/lib/types";
 import { fetchLeaderboard } from "@/lib/utils";
-import createUsers from "@/lib/createUsers";
 
 export default function LeaderboardPage() {
   const router = useRouter();
@@ -53,11 +52,11 @@ export default function LeaderboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button onClick={handleRefresh} variant="outline">
+            <Button onClick={handleRefresh} className="hover:bg-[rgb(30,86,213)] hover:text-white" variant="outline">
               Refresh Leaderboard
             </Button>
             <Link href="/dashboard">
-              <Button variant="outline">Dashboard</Button>
+              <Button variant="outline" className="hover:bg-[rgb(30,86,213)] hover:text-white">Dashboard</Button>
             </Link>
           </div>
         </div>
