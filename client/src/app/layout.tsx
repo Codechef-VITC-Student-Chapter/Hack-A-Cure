@@ -1,29 +1,36 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import "./globals.css"
-import Providers from "./providers"
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import Providers from "./providers";
+import React from "react";
 
-const _geist = Geist({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+// Load fonts properly and apply them to the body
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
 
-// export const metadata: Metadata = {
-//   title: "Hack-A-Cure - AI RAG Competition",
-//   description: "Build intelligent RAG models and compete for prizes in the Hack-A-Cure competition",
-//   generator: "v0.app",
-// }
+// Export metadata (optional but recommended)
+export const metadata: Metadata = {
+  title: "Hack-A-Cure - AI RAG Competition",
+  description:
+    "Build intelligent RAG models and compete for prizes in the Hack-A-Cure competition",
+  icons: "/logo.svg",
+};
 
+// RootLayout must return <html> and <body> as per Next.js requirements
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <body
+        className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}
+      >
         <Providers>{children}</Providers>
         {/* <Analytics /> */}
       </body>
     </html>
-  )
+  );
 }

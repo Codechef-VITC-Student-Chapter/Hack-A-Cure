@@ -11,7 +11,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-500">
+        <div className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-500">
           Hack-A-Cure
         </div>
         <div className="flex gap-4">
@@ -21,7 +21,12 @@ export default function LandingPage() {
             </Link>
           ) : (
             <Link href="/login">
-              <Button variant="outline">Login</Button>
+              <Button
+                variant="outline"
+                className="hover:bg-[rgb(30,86,213)] hover:text-white"
+              >
+                Login
+              </Button>
             </Link>
           )}
         </div>
@@ -47,19 +52,6 @@ export default function LandingPage() {
             from multiple textbooks. Push the limits of AI retrieval and
             reasoning.
           </p>
-
-          {status !== "authenticated" && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/login">
-                <Button
-                  size="lg"
-                  className="border-2 border-cyan-400 hover:bg-cyan-400/10"
-                >
-                  Login
-                </Button>
-              </Link>
-            </div>
-          )}
         </div>
       </section>
 

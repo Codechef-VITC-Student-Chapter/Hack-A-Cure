@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/db/mongoose";
 import { User } from "@/models/user.model";
-import { IUser, SubmissionRequest, SubmissionResponse } from "@/lib/types";
+import { SubmissionRequest, SubmissionResponse } from "@/lib/types";
 
 export async function POST(
   req: Request,
@@ -38,7 +38,7 @@ export async function POST(
         throw new Error("Failed to create job");
       }
 
-      const { job_id } : SubmissionResponse = await res.json();
+      const { job_id }: SubmissionResponse = await res.json();
 
       updatedUser.url = submission_url;
       updatedUser.submissionsLeft -= 1;

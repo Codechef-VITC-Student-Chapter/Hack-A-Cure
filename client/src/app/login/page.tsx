@@ -24,7 +24,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -57,6 +57,7 @@ export default function LoginPage() {
       }
       setLoading(false);
     } catch (err) {
+      console.log(err);
       setError("Login failed. Please try again.");
     }
   };
@@ -110,21 +111,12 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm">
-            <p className="text-muted-foreground">
-              Don't have an account?{" "}
-              <Link
-                href="/register"
-                className="text-cyan-400 hover:text-cyan-300 transition"
-              >
-                Register here
-              </Link>
-            </p>
-          </div>
-
           <div className="mt-4 pt-4 border-t border-border">
             <Link href="/">
-              <Button variant="outline" className="w-full bg-transparent">
+              <Button
+                variant="outline"
+                className="w-full bg-transparent hover:bg-[rgb(30,86,213)] hover:text-white"
+              >
                 Back to Home
               </Button>
             </Link>

@@ -1,4 +1,3 @@
-import NextAuth from "next-auth";
 import { IUser } from "@/models/user.model";
 
 declare module "next-auth" {

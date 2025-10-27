@@ -64,7 +64,7 @@ export default function DashboardPage() {
       return;
     }
 
-    if (teamDetails?.submissionsLeft! <= 0) {
+    if (teamDetails?.submissionsLeft ?? 0 <= 0) {
       alert("You have reached the maximum of 10 submissions");
       return;
     }
@@ -87,8 +87,9 @@ export default function DashboardPage() {
 
       setNewUrl("");
       alert("Submission added successfully!");
-    } catch (error) {
+    } catch (e) {
       alert("Failed to submit. Please try again.");
+      console.log(e);
     } finally {
       setLoading(false);
     }
@@ -134,7 +135,7 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <Link href="/">
-              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-500">
                 Hack-A-Cure
               </h1>
             </Link>
@@ -146,15 +147,26 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <Badge
               variant={
-                teamDetails?.submissionsLeft! < 3 ? "destructive" : "secondary"
+                teamDetails?.submissionsLeft ?? 0 < 3
+                  ? "destructive"
+                  : "secondary"
               }
             >
               Submissions: {teamDetails?.submissionsLeft} / 10
             </Badge>
             <Link href="/leaderboard">
-              <Button variant="outline" className="hover:bg-[rgb(30,86,213)] hover:text-white">Leaderboard</Button>
+              <Button
+                variant="outline"
+                className="hover:bg-[rgb(30,86,213)] hover:text-white"
+              >
+                Leaderboard
+              </Button>
             </Link>
-            <Button variant="outline" className="hover:bg-[rgb(30,86,213)] hover:text-white" onClick={() => signOut()}>
+            <Button
+              variant="outline"
+              className="hover:bg-[rgb(30,86,213)] hover:text-white"
+              onClick={() => signOut()}
+            >
               Logout
             </Button>
           </div>
@@ -175,7 +187,7 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>Submit Your RAG Endpoint</CardTitle>
                 <CardDescription>
-                  Submit your model's API endpoint for evaluation. You have{" "}
+                  Submit your model&apos;s API endpoint for evaluation. You have{" "}
                   {teamDetails?.submissionsLeft} submissions remaining.
                 </CardDescription>
               </CardHeader>
@@ -186,15 +198,11 @@ export default function DashboardPage() {
                     <Input
                       id="url"
                       type="url"
-                      placeholder="https://your-api-url.com/predict"
+                      placeholder="https://your-api-url.com/query"
                       value={newUrl}
                       onChange={(e) => setNewUrl(e.target.value)}
                       disabled={loading || teamDetails?.submissionsLeft === 0}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Must be a POST endpoint that accepts JSON with a
-                      "question" field
-                    </p>
                   </div>
 
                   <Button
@@ -316,7 +324,7 @@ export default function DashboardPage() {
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="contract">
                     <AccordionTrigger>
-                      API Contract: TL;DR for Request & Response Structure
+                      API Request & Response Structure
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 text-sm">
                       <p>
@@ -332,7 +340,7 @@ export default function DashboardPage() {
                       <pre className="bg-card p-3 rounded text-xs overflow-x-auto">
                         {`{
   "query": "string (required)",
-  "top_k": "integer (optional)"
+  "top_k": "integer (required)"
 }`}
                       </pre>
                       <p>

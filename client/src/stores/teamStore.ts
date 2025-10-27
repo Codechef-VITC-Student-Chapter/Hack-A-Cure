@@ -33,8 +33,12 @@ export const useTeamStore = create<TeamStore>((set) => ({
 
       const { data } = await res.json();
       set({ teamDetails: data, loading: false });
-    } catch (err: any) {
-      set({ error: err.message, loading: false });
+    } catch (err) {
+      if (err instanceof Error) {
+        set({ error: err.message, loading: false });
+      } else {
+        set({ error: "An unknown error occurred", loading: false });
+      }
     }
   },
 }));

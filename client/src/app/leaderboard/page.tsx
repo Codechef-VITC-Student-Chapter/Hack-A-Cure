@@ -42,7 +42,7 @@ export default function LeaderboardPage() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <Link href="/">
-              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-500">
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-blue-500">
                 Hack-A-Cure
               </h1>
             </Link>
@@ -52,11 +52,20 @@ export default function LeaderboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button onClick={handleRefresh} className="hover:bg-[rgb(30,86,213)] hover:text-white" variant="outline">
+            <Button
+              onClick={handleRefresh}
+              className="hover:bg-[rgb(30,86,213)] hover:text-white"
+              variant="outline"
+            >
               Refresh Leaderboard
             </Button>
             <Link href="/dashboard">
-              <Button variant="outline" className="hover:bg-[rgb(30,86,213)] hover:text-white">Dashboard</Button>
+              <Button
+                variant="outline"
+                className="hover:bg-[rgb(30,86,213)] hover:text-white"
+              >
+                Dashboard
+              </Button>
             </Link>
           </div>
         </div>
@@ -152,8 +161,7 @@ export default function LeaderboardPage() {
           <CardHeader>
             <CardTitle>Full Leaderboard</CardTitle>
             <CardDescription>
-              All teams ranked by score. Scores are updated every
-              15 mins.
+              All teams ranked by score. Scores are updated every 15 mins.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -180,10 +188,10 @@ export default function LeaderboardPage() {
                     >
                       <td className="py-3 px-4 w-1/3">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-lg">{i+1}</span>
-                          {i+1 === 1 && <span>🥇</span>}
-                          {i+1 === 2 && <span>🥈</span>}
-                          {i+1 === 3 && <span>🥉</span>}
+                          <span className="font-bold text-lg">{i + 1}</span>
+                          {i + 1 === 1 && <span>🥇</span>}
+                          {i + 1 === 2 && <span>🥈</span>}
+                          {i + 1 === 3 && <span>🥉</span>}
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -209,9 +217,7 @@ export default function LeaderboardPage() {
 
         {/* Footer Note */}
         <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>
-            Leaderboard is updated every 15 mins
-          </p>
+          <p>Leaderboard is updated every 15 mins</p>
         </div>
       </main>
     </div>
