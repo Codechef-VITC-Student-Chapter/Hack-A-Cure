@@ -1,11 +1,12 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Button } from "@/components/ui/button"
+import { useSession } from "next-auth/react"
+import Link from "next/link"
+import Image from "next/image"
 
 export default function LandingPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession()
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -21,10 +22,7 @@ export default function LandingPage() {
             </Link>
           ) : (
             <Link href="/login">
-              <Button
-                variant="outline"
-                className="hover:bg-[rgb(30,86,213)] hover:text-white"
-              >
+              <Button variant="outline" className="hover:bg-[rgb(30,86,213)] hover:text-white bg-transparent">
                 Login
               </Button>
             </Link>
@@ -41,16 +39,13 @@ export default function LandingPage() {
         </div>
 
         <div className="text-center max-w-3xl">
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 text-balance">
-            Hack-A-Cure
-          </h1>
+          <h1 className="text-6xl md:text-7xl font-bold mb-6 text-balance">Hack-A-Cure</h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 text-balance">
             AI Retrieval-Augmented Generation Challenge 2025
           </p>
           <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto text-balance">
-            Build intelligent RAG models capable of answering complex questions
-            from multiple textbooks. Push the limits of AI retrieval and
-            reasoning.
+            Build intelligent RAG models capable of answering complex questions from multiple textbooks. Push the limits
+            of AI retrieval and reasoning.
           </p>
         </div>
       </section>
@@ -58,17 +53,13 @@ export default function LandingPage() {
       {/* About Section */}
       <section className="py-20 px-6 bg-card/50 border-t border-border">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center">
-            About the Competition
-          </h2>
+          <h2 className="text-4xl font-bold mb-12 text-center">About the Competition</h2>
 
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                Hack-A-Cure is a competition where participants build
-                intelligent RAG models capable of answering complex questions
-                from multiple textbooks. Push the limits of AI retrieval and
-                reasoning.
+                Hack-A-Cure is a competition where participants build intelligent RAG models capable of answering
+                complex questions from multiple textbooks. Push the limits of AI retrieval and reasoning.
               </p>
               <ul className="space-y-4">
                 <li className="flex gap-3">
@@ -91,6 +82,17 @@ export default function LandingPage() {
                 <div className="text-6xl mb-4">🧠</div>
                 <p className="text-muted-foreground">AI-Powered Competition</p>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-6 border-t border-border">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold mb-12 text-center">Sponsors</h2>
+          <div className="flex items-center justify-center">
+            <div className="bg-card/50 border border-border rounded-lg p-8 flex items-center justify-center">
+              <Image src="/xyz-logo-color.png" alt="XYZ Logo" width={200} height={100} className="object-contain" />
             </div>
           </div>
         </div>
@@ -184,5 +186,5 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
-  );
+  )
 }
