@@ -6,7 +6,11 @@ import os, traceback
 from dotenv import load_dotenv
 from beanie import PydanticObjectId
 from app.models import JobStatus
-from app.models.api_schema import SubmissionRequest, SubmissionResponse, JobStatusResponse
+from app.models.api_schema import (
+    SubmissionRequest,
+    SubmissionResponse,
+    JobStatusResponse,
+)
 from app.models.db_schema import Job, init_db
 from app.services import enqueue_evaluation_job, build_dataset_from_db
 
@@ -16,20 +20,26 @@ MONGO_URI = os.getenv("MONGO_URI")
 if not MONGO_URI:
     raise Exception("No MONGO_URI env variable found")
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     yield
 
+
 app = FastAPI(lifespan=lifespan, title="HackACure RAG Eval API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # or ["*"] during dev
+    allow_origins=[
+        "http://localhost:3000",
+        os.getenv("CLIENT_URL"),
+    ],  # or ["*"] during dev
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 async def server_root():
