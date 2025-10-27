@@ -17,7 +17,7 @@ export const addNewSubmission = async (newSubmission: SubmissionRequest) => {
 export const getAllTeamJobs = async (teamId: string) => {
   const response = await fetch(`/api/user/${teamId}/submissions`);
 
-  const { jobs }: {jobs: Job[]} = await response.json();
+  const { jobs }: { jobs: Job[] } = await response.json();
   jobs.sort(
     (a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()

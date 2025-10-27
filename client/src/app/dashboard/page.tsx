@@ -28,6 +28,7 @@ import { useTeamStore } from "@/stores/teamStore";
 import { Job, SubmissionRequest } from "@/lib/types";
 import { formatDateTime } from "@/lib/utils";
 import { addNewSubmission, getAllTeamJobs } from "@/lib/apiUtils";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -44,28 +45,31 @@ export default function DashboardPage() {
     if (status === "loading") return;
     if (status === "unauthenticated") router.push("/");
 
-    if (session?.user?.email) {
-      fetchTeamDetails(session.user.id);
+    const userId = session?.user?.id as string | undefined;
+    if (userId) {
+      fetchTeamDetails(userId);
 
       const fetchJobs = async () => {
-        const data = await getAllTeamJobs(session.user.id);
-        setJobs(data);
+        setLoading(true);
+        const data = await getAllTeamJobs(userId);
+        setJobs(Array.isArray(data) ? data : []);
+        setLoading(false);
       };
 
       fetchJobs();
     }
-  }, [router, status]);
+  }, [router, status, session?.user?.id, fetchTeamDetails]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!newUrl) {
-      alert("Please enter a valid URL");
+      toast.error("Please enter a valid URL");
       return;
     }
-
-    if (teamDetails?.submissionsLeft ?? 0 <= 0) {
-      alert("You have reached the maximum of 10 submissions");
+    console.log(teamDetails);
+    if ((teamDetails?.submissionsLeft ?? 0) <= 0) {
+      toast.error("You have reached the maximum of 10 submissions");
       return;
     }
 
@@ -79,16 +83,19 @@ export default function DashboardPage() {
       };
 
       const { success, user } = await addNewSubmission(newSubmission);
-      if (success) setTeamDetails(user);
-      else throw new Error("Submission failed");
+      if (success) {
+        // Refresh from server for authoritative count
+        await fetchTeamDetails(session!.user.id);
+        if (user) setTeamDetails(user);
+      } else throw new Error("Submission failed");
 
       const updatedJobs = await getAllTeamJobs(session!.user.id);
-      setJobs(updatedJobs);
+      setJobs(Array.isArray(updatedJobs) ? updatedJobs : []);
 
       setNewUrl("");
-      alert("Submission added successfully!");
+      toast.success("Submission queued for evaluation");
     } catch (e) {
-      alert("Failed to submit. Please try again.");
+      toast.error("Failed to submit. Please try again.");
       console.log(e);
     } finally {
       setLoading(false);
@@ -98,7 +105,8 @@ export default function DashboardPage() {
   const handleRefreshSubmissions = async () => {
     if (session?.user.id) {
       const updatedJobs = await getAllTeamJobs(session.user.id);
-      setJobs(updatedJobs);
+      setJobs(Array.isArray(updatedJobs) ? updatedJobs : []);
+      await fetchTeamDetails(session.user.id);
     }
   };
 
@@ -152,7 +160,7 @@ export default function DashboardPage() {
                   : "secondary"
               }
             >
-              Submissions: {teamDetails?.submissionsLeft} / 10
+              Submissions: {teamDetails?.submissionsLeft ?? 0} / 10
             </Badge>
             <Link href="/leaderboard">
               <Button
@@ -188,7 +196,7 @@ export default function DashboardPage() {
                 <CardTitle>Submit Your RAG Endpoint</CardTitle>
                 <CardDescription>
                   Submit your model&apos;s API endpoint for evaluation. You have{" "}
-                  {teamDetails?.submissionsLeft} submissions remaining.
+                  {teamDetails?.submissionsLeft ?? 0} submissions remaining.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -201,13 +209,17 @@ export default function DashboardPage() {
                       placeholder="https://your-api-url.com/query"
                       value={newUrl}
                       onChange={(e) => setNewUrl(e.target.value)}
-                      disabled={loading || teamDetails?.submissionsLeft === 0}
+                      disabled={
+                        loading || (teamDetails?.submissionsLeft ?? 0) <= 0
+                      }
                     />
                   </div>
 
                   <Button
                     type="submit"
-                    disabled={loading || teamDetails?.submissionsLeft === 0}
+                    disabled={
+                      loading || (teamDetails?.submissionsLeft ?? 0) <= 0
+                    }
                   >
                     {loading ? "Submitting..." : "Submit Endpoint"}
                   </Button>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import { Toaster } from "sonner";
 import React from "react";
 
 // Load fonts properly and apply them to the body
@@ -29,6 +30,7 @@ export default function RootLayout({
         className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <Providers>{children}</Providers>
+        <Toaster richColors position="top-right" />
         {/* <Analytics /> */}
       </body>
     </html>

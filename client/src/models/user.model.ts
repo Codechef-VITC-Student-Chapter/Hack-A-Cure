@@ -9,7 +9,7 @@ export const UserSchema = new Schema<IUser>(
     password: { type: String, required: true },
     jobIds: [{ type: Schema.Types.ObjectId, ref: "Job" }],
     bestScore: { type: Number, default: 0 },
-    submissionsLeft: { type: Number, default: 5 },
+    submissionsLeft: { type: Number, default: 10 },
     url: { type: String },
   },
   { timestamps: true }
