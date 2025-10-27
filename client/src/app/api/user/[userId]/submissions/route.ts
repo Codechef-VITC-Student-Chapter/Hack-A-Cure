@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { connectDB } from "@/db/mongoose";
 import { User } from "@/models/user.model";
 import { IUser, Job } from "@/lib/types";
@@ -8,8 +10,25 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
     const { userId } = await params;
+    // Restrict to own submissions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sessionUserId = session.user.id || session.user?._id;
+    if (!sessionUserId || sessionUserId !== userId) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403 }
+      );
+    }
     const user: IUser | null = await User.findById(userId);
 
     if (!user) {
@@ -19,15 +38,12 @@ export async function GET(
       );
     }
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/jobs/team/${userId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const res = await fetch(`${process.env.BACKEND_URL}/jobs/team/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!res.ok) {
       throw new Error("Failed to create job");

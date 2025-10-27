@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { connectDB } from "@/db/mongoose";
 import { User } from "@/models/user.model";
 import Redis from "ioredis";
@@ -10,6 +12,14 @@ const CACHE_TTL = 10 * 60;
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const cached = await redis.get(CACHE_KEY);
     if (cached) {
       console.log("Serving leaderboard from Redis");
@@ -23,9 +33,7 @@ export async function GET() {
     await Promise.all(
       users.map(async (user: IUser) => {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/jobs/team/${
-            user._id as string
-          }`,
+          `${process.env.BACKEND_URL}/jobs/team/${user._id as string}`,
           {
             method: "GET",
             headers: {
