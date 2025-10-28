@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan, title="HackACure RAG Eval API")
-
+print(os.getenv("CLIENT_URL"))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -74,7 +74,7 @@ async def submit_job(payload: SubmissionRequest):
 
         # Build dataset: always fetch 25 QA pairs
         try:
-            dataset = await build_dataset_from_db(5)
+            dataset = await build_dataset_from_db()
         except Exception as e:
             job.status = JobStatus.FAILED
             await job.save()
