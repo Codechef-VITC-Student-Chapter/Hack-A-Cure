@@ -35,6 +35,9 @@ export default function LeaderboardPage() {
 
   const topThree = teams.slice(0, 3);
 
+  const formatScore = (val: number) =>
+    Number.isFinite(val) ? parseFloat(val.toFixed(6)).toString() : "0";
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -92,10 +95,12 @@ export default function LeaderboardPage() {
                           🥈
                         </div>
                         <h3 className="text-xl font-bold mb-2">
-                          {topThree[1].teamName}
+                          {`${topThree[1].teamName}${
+                            topThree[1].name ? ` - ${topThree[1].name}` : ""
+                          }`}
                         </h3>
                         <div className="text-3xl font-bold text-cyan-400 mb-2">
-                          {topThree[1].bestScore.toFixed(1)}
+                          {formatScore(topThree[1].bestScore)}
                         </div>
                       </div>
                     </CardContent>
@@ -115,10 +120,12 @@ export default function LeaderboardPage() {
                       <div className="text-center">
                         <div className="text-6xl font-bold mb-2">🥇</div>
                         <h3 className="text-2xl font-bold mb-2">
-                          {topThree[0].teamName}
+                          {`${topThree[0].teamName}${
+                            topThree[0].name ? ` - ${topThree[0].name}` : ""
+                          }`}
                         </h3>
                         <div className="text-4xl font-bold text-yellow-400 mb-2">
-                          {topThree[0].bestScore.toFixed(1)}
+                          {formatScore(topThree[0].bestScore)}
                         </div>
                       </div>
                     </CardContent>
@@ -138,10 +145,12 @@ export default function LeaderboardPage() {
                       <div className="text-center">
                         <div className="text-5xl font-bold mb-2">🥉</div>
                         <h3 className="text-xl font-bold mb-2">
-                          {topThree[2].teamName}
+                          {`${topThree[2].teamName}${
+                            topThree[2].name ? ` - ${topThree[2].name}` : ""
+                          }`}
                         </h3>
                         <div className="text-3xl font-bold text-orange-400 mb-2">
-                          {topThree[2].bestScore.toFixed(1)}
+                          {formatScore(topThree[2].bestScore)}
                         </div>
                       </div>
                     </CardContent>
@@ -171,7 +180,7 @@ export default function LeaderboardPage() {
                   <tr className="border-b border-border">
                     <th className="text-left py-3 px-4 font-medium">Rank</th>
                     <th className="text-left py-3 px-4 justify-start flex font-medium">
-                      Team Name
+                      Team - Participant
                     </th>
                     <th className="text-left py-3 px-4 font-medium">Score</th>
                   </tr>
@@ -196,7 +205,11 @@ export default function LeaderboardPage() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex w-full justify-start items-center gap-2 ">
-                          <span className="font-medium">{team.teamName}</span>
+                          <span className="font-medium">
+                            {`${team.teamName}${
+                              team.name ? ` - ${team.name}` : ""
+                            }`}
+                          </span>
                           {team._id === session?.user.id && (
                             <Badge variant="secondary">You</Badge>
                           )}
@@ -204,7 +217,7 @@ export default function LeaderboardPage() {
                       </td>
                       <td className="py-3 w-full px-4 flex">
                         <span className="font-bold text-lg text-cyan-400">
-                          {team.bestScore.toFixed(1)}
+                          {formatScore(team.bestScore)}
                         </span>
                       </td>
                     </tr>
