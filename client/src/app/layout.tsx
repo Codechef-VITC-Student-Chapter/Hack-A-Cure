@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 // Export metadata (optional but recommended)
 export const metadata: Metadata = {
-  title: "Hack-A-Cure - AI RAG Competition",
+  title: "Hack-A-Cure | CodeChef-VITCC",
   description:
     "Build intelligent RAG models and compete for prizes in the Hack-A-Cure competition",
   icons: "/logo.svg",

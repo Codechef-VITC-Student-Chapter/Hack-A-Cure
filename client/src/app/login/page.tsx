@@ -27,9 +27,7 @@ export default function LoginPage() {
   const { status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard");
-    }
+    router.push("/");
   }, [status, router]);
 
   const handleLogin = async (e: React.FormEvent) => {

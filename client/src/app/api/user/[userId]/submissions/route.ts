@@ -37,7 +37,7 @@ export async function GET(
         { status: 404 }
       );
     }
-
+    console.log(process.env.BA)
     const res = await fetch(`${process.env.BACKEND_URL}/jobs/team/${userId}`, {
       method: "GET",
       headers: {
