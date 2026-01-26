@@ -1,7 +1,7 @@
 import os
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 
@@ -35,11 +35,11 @@ config = {
 }
 
 evaluator_llm = LangchainLLMWrapper(
-    ChatGroq(
-        model=GROQ_API_MODEL,
+    ChatGoogleGenerativeAI(
+        model=config["model"],
         temperature=config["temperature"],
         max_tokens=config["max_tokens"],
-        api_key=GROQ_API_KEY,
+        api_key=GEMINI_API_KEY,
     )
 )
 

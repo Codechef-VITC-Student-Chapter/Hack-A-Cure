@@ -3,11 +3,16 @@ uvicorn
 redis
 rq
 requests
+httpx
 <<<<<<< HEAD
 ragas
+datasets
+evaluate
 beanie
 motor
-=======
+langchain-google-genai
+langchain-groq
+langchain_mistralai=======
 httpx
 ragas
 datasets
